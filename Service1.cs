@@ -17,7 +17,22 @@ namespace ServiceReservasi
 
         public string deletePemesanan(string idPemesanan)
         {
-            throw new NotImplementedException();
+            string a = "gagal";
+            try
+            {
+                string sql = "delete from dbo.Pemesanan where ID_Reservasi = '"+idPemesanan+"'";
+                connection = new SqlConnection(conString);
+                com = new SqlCommand(sql,connection);
+                connection.Open();
+                com.ExecuteNonQuery();
+                connection.Close();
+                a = "sukses";
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            return a;
         }
 
         public List<DetailLokasi> DetailLokasi()
@@ -48,9 +63,25 @@ namespace ServiceReservasi
             return LokasiFull;
         }
 
-        public string editPemesanan(string idPemesanan, string namaCustomer)
+        public string editPemesanan(string idPemesanan, string namaCustomer, string noTelepon)
         {
-            throw new NotImplementedException();
+            string a = "gagal";
+            try
+            {
+                string sql = "update dbo.Pemesanan set Nama_Customer='"+namaCustomer+"', No_Telepon='"+noTelepon+"' where ID_Reservasi='"+idPemesanan+"'";
+                connection = new SqlConnection(conString);
+                com= new SqlCommand(sql, connection);
+                connection.Open();
+                com.ExecuteNonQuery();
+                connection.Close();
+
+                a = "sukses";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            return a;
         }
 
         public string pemesanan(string idPemesanan, string namaCustomer, string noTelepon, int jumlahPemesanan, string idLokasi)
@@ -64,6 +95,14 @@ namespace ServiceReservasi
                 connection.Open();
                 com.ExecuteNonQuery();
                 connection.Close();
+
+                string sql2 =  "update dbo.Lokasi set Kuota = Kuota - "+jumlahPemesanan+" where ID_Lokasi ='"+idLokasi+"'";
+                connection = new SqlConnection(conString);
+                com = new SqlCommand (sql2,connection);
+                connection.Open();
+                com.ExecuteNonQuery();
+                connection.Close();
+
                 a = "sukses";
             }
             catch (Exception ex)
@@ -75,7 +114,32 @@ namespace ServiceReservasi
 
         public List<Pemesanan> Pemesanan()
         {
-            throw new NotImplementedException();
+            List<Pemesanan> pemesan = new List<Pemesanan>();
+            try
+            {
+                string sql = "select ID_Reservasi, Nama_Customer, No_Telepon, Jumlah_Pemesanan, " +
+                    "Nama_Lokasi from dbo.Pemesanan p join dbo.Lokasi l on p.ID_Lokasi = l.ID_Lokasi";
+                connection = new SqlConnection(conString);
+                com = new SqlCommand(sql,connection);
+                connection.Open();
+                SqlDataReader reader = com.ExecuteReader();
+                while (reader.Read())
+                {
+                    Pemesanan data = new Pemesanan();
+                    data.idPemesanan = reader.GetInt32(0).ToString();
+                    data.namaCustomer = reader.GetString(1);
+                    data.noTelepon = reader.GetString(2);
+                    data.jumlahPemesanan = reader.GetInt32(3);
+                    data.Lokasi = reader.GetString(4);
+                    pemesan.Add(data);
+                }
+                connection.Close();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            return pemesan;
         }
 
         public List<CekLokasi> ReviewLokasi()
